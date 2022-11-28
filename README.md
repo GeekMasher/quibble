@@ -1,3 +1,3 @@
-# compose-fanatic
+# quibble
 
 Container Compose YML security tool
