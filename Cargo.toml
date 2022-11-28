@@ -1,0 +1,28 @@
+[package]
+name = "quibble"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# CLI parser
+clap = { version = "4.0", features = ["derive"] }
+console = "0.15"
+dialoguer = "0.10"
+indicatif = "0.17"
+# Error handling
+thiserror = "1"
+anyhow = "1"
+# logging
+log = "0.4"
+env_logger = "0.10"
+
+serde = { version = "1.0", features = ["derive"]}
+serde_yaml = "0.9"
+semver = "1"
+
+walkdir = "2.3"
+
+
+
