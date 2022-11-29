@@ -40,7 +40,7 @@ fn main() -> Result<()> {
                 results.extend(compose::checks(cf));
 
                 for result in results {
-                    if result.severity.filter(filter.to_string()) {
+                    if ! result.severity.filter(filter.to_string()) {
                         debug!("Skipping: {}", result);
                         continue;
                     }
