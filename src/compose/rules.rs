@@ -15,21 +15,24 @@ impl Rule for ComposeVersion {
                 alerts.push(Alert {
                     id: RuleID::None,
                     details: String::from("Compose v1"),
-                    severity: crate::security::Severity::Medium
+                    severity: crate::security::Severity::Medium,
+                    path: compose_file.path.clone()
                 })
             },
             "2" | "2.0" | "2.1" | "2.2" | "2.3" | "2.4" => {
                 alerts.push(Alert {
                     id: RuleID::None,
                     details: String::from("Compose v2 used"),
-                    severity: crate::security::Severity::Low
+                    severity: crate::security::Severity::Low,
+                    path: compose_file.path.clone()
                 })
             },
             "3" | "3.0" | "3.1" | "3.2" | "3.3" | "3.4" | "3.5" => {
                 alerts.push(Alert {
                     id: crate::security::RuleID::None,
                     details: String::from("Using old Compose v3 spec, consider upgrading"),
-                    severity: crate::security::Severity::Low
+                    severity: crate::security::Severity::Low,
+                    path: compose_file.path.clone()
                 })
             },
             _ => {
@@ -56,9 +59,9 @@ impl Rule for DockerSocket {
                         id: RuleID::Owasp("D04".to_string()),
                         details: String::from("Docker Socket being passed into container"),
                         severity: crate::security::Severity::High,
+                        path: compose_file.path.clone(),
                     })
                 }
-
             }
 
         }
@@ -78,7 +81,8 @@ impl Rule for SecurityOpts {
                         alerts.push(Alert {
                             id: RuleID::Owasp("D04".to_string()),
                             details: String::from("Security Opts `no-new-privileges` set to `false`"),
-                            severity: crate::security::Severity::High
+                            severity: crate::security::Severity::High,
+                            path: compose_file.path.clone(),
                         })
                     }
                 }
@@ -87,7 +91,8 @@ impl Rule for SecurityOpts {
                 alerts.push(Alert {
                     id: RuleID::Owasp("D04".to_string()),
                     details: String::from("Security Opts `no-new-privileges` not set"),
-                    severity: crate::security::Severity::High
+                    severity: crate::security::Severity::High,
+                    path: compose_file.path.clone(),
                 })
             }
         }
@@ -106,7 +111,8 @@ impl Rule for KernalParameters {
                         alerts.push(Alert {
                             id: RuleID::None,
                             details: format!("IPv4 Kernal Parameters modified: {}", syscall),
-                            severity: crate::security::Severity::Information
+                            severity: crate::security::Severity::Information,
+                            path: compose_file.path.clone(),
                         })
                     }
                 }
@@ -125,14 +131,16 @@ impl Rule for KernalParameters {
                         alerts.push(Alert {
                             id: RuleID::None,
                             details: String::from("Container with high networking privileages"),
-                            severity: Severity::Medium
+                            severity: Severity::Medium,
+                            path: compose_file.path.clone(),
                         })
                     }
                     if cap.contains("SYS_ADMIN") {
                         alerts.push(Alert {
                             id: RuleID::None,
                             details: String::from("Container with high system privileages"),
-                            severity: Severity::Medium
+                            severity: Severity::Medium,
+                            path: compose_file.path.clone(),
                         })
                     }
                 }
