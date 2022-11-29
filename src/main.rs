@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 
     // Subcommands 
     match &arguments.commands {
-        ArgumentCommands::Compose { path } => {
+        ArgumentCommands::Compose { path, filter } => {
             let full_path = canonicalize(path)?;
             let compose_files = compose::find(&full_path)?;
 
@@ -40,6 +40,11 @@ fn main() -> Result<()> {
                 results.extend(compose::checks(cf));
 
                 for result in results {
+                    if result.severity.filter(filter.to_string()) {
+                        debug!("Skipping: {}", result);
+                        continue;
+                    }
+
                     match result.severity {
                         security::Severity::Critical |
                         security::Severity::High => {
@@ -50,7 +55,7 @@ fn main() -> Result<()> {
                             warn!("- {}", result);
                         },
                         _ => {
-                            debug!("- {}", result);
+                            info!("- {}", result);
                         }
                     }
                 }

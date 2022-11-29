@@ -15,7 +15,7 @@ impl Rule for ComposeVersion {
                 alerts.push(Alert {
                     id: RuleID::None,
                     details: String::from("Compose v1"),
-                    severity: crate::security::Severity::Medium,
+                    severity: Severity::Medium,
                     path: compose_file.path.clone()
                 })
             },
@@ -23,7 +23,7 @@ impl Rule for ComposeVersion {
                 alerts.push(Alert {
                     id: RuleID::None,
                     details: String::from("Compose v2 used"),
-                    severity: crate::security::Severity::Low,
+                    severity: Severity::Low,
                     path: compose_file.path.clone()
                 })
             },
@@ -31,7 +31,7 @@ impl Rule for ComposeVersion {
                 alerts.push(Alert {
                     id: crate::security::RuleID::None,
                     details: String::from("Using old Compose v3 spec, consider upgrading"),
-                    severity: crate::security::Severity::Low,
+                    severity: Severity::Low,
                     path: compose_file.path.clone()
                 })
             },
@@ -58,7 +58,7 @@ impl Rule for DockerSocket {
                     alerts.push(Alert {
                         id: RuleID::Owasp("D04".to_string()),
                         details: String::from("Docker Socket being passed into container"),
-                        severity: crate::security::Severity::High,
+                        severity: Severity::High,
                         path: compose_file.path.clone(),
                     })
                 }
@@ -81,7 +81,7 @@ impl Rule for SecurityOpts {
                         alerts.push(Alert {
                             id: RuleID::Owasp("D04".to_string()),
                             details: String::from("Security Opts `no-new-privileges` set to `false`"),
-                            severity: crate::security::Severity::High,
+                            severity: Severity::High,
                             path: compose_file.path.clone(),
                         })
                     }
@@ -91,7 +91,7 @@ impl Rule for SecurityOpts {
                 alerts.push(Alert {
                     id: RuleID::Owasp("D04".to_string()),
                     details: String::from("Security Opts `no-new-privileges` not set"),
-                    severity: crate::security::Severity::High,
+                    severity: Severity::High,
                     path: compose_file.path.clone(),
                 })
             }
@@ -111,7 +111,7 @@ impl Rule for KernalParameters {
                         alerts.push(Alert {
                             id: RuleID::None,
                             details: format!("IPv4 Kernal Parameters modified: {}", syscall),
-                            severity: crate::security::Severity::Information,
+                            severity: Severity::Information,
                             path: compose_file.path.clone(),
                         })
                     }

@@ -1,7 +1,7 @@
 #![allow(unused)]
-use std::fmt::Display;
+use std::{fmt::Display, ops::Index};
 
-use crate::compose::ComposeFile;
+use crate::{compose::ComposeFile, security};
 
 #[derive(Debug)]
 pub enum Severity {
@@ -37,6 +37,23 @@ impl Display for RuleID {
             RuleID::Cwe(c) => { format!("CWE-{}", c) }
         };
         write!(f, "{}", id)
+    }
+}
+
+
+impl Severity {
+    /// Should I based on a filter (String) need to display this?
+    pub fn filter(&self, filter: String) -> bool {
+        // TODO: Create a better filter function...
+        let sevs = vec!["critical", "high", "errors", "medium", "low", "warnings", "information", "notes", "quality"];
+
+        let filter_lower = filter.to_lowercase();
+        let display = format!("{}", self).to_lowercase();
+
+        let (fl, _) = sevs.iter().enumerate().find(|(i, &s)| s == filter_lower).unwrap();
+        let (di, _) = sevs.iter().enumerate().find(|(i, &s)| s == display).unwrap();
+
+        di > fl
     }
 }
 

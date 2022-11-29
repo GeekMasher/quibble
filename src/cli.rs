@@ -18,7 +18,10 @@ pub enum ArgumentCommands {
     // Scan compose file(s)
     Compose {
         #[clap(short, long, default_value_t=String::from("./"))]
-        path: String
+        path: String,
+
+        #[clap(short, long, default_value_t=String::from("errors"))]
+        filter: String,
     },
     // Scan registry containers
     Registry,
