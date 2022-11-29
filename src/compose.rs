@@ -48,6 +48,9 @@ pub fn find(path: &Path) -> Result<Vec<ComposeFile>> {
             }
         }
     }
+    else {
+        return Err(anyhow!("Unknown path type..."));
+    }
 
     if compose_files.is_empty() {
         warn!("No compose file were found: {}", path.display());
