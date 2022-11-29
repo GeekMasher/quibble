@@ -1,7 +1,7 @@
 
 use log::debug;
 
-use crate::security::{Rule, Alert, RuleID, Severity};
+use crate::security::{Rule, Alert, RuleID, Severity, AlertLocation};
 
 
 pub struct ComposeVersion;
@@ -16,7 +16,7 @@ impl Rule for ComposeVersion {
                     id: RuleID::None,
                     details: String::from("Compose v1"),
                     severity: Severity::Medium,
-                    path: compose_file.path.clone()
+                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                 })
             },
             "2" | "2.0" | "2.1" | "2.2" | "2.3" | "2.4" => {
@@ -24,7 +24,7 @@ impl Rule for ComposeVersion {
                     id: RuleID::None,
                     details: String::from("Compose v2 used"),
                     severity: Severity::Low,
-                    path: compose_file.path.clone()
+                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                 })
             },
             "3" | "3.0" | "3.1" | "3.2" | "3.3" | "3.4" | "3.5" => {
@@ -32,7 +32,7 @@ impl Rule for ComposeVersion {
                     id: crate::security::RuleID::None,
                     details: String::from("Using old Compose v3 spec, consider upgrading"),
                     severity: Severity::Low,
-                    path: compose_file.path.clone()
+                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                 })
             },
             _ => {
@@ -59,7 +59,7 @@ impl Rule for DockerSocket {
                         id: RuleID::Owasp("D04".to_string()),
                         details: String::from("Docker Socket being passed into container"),
                         severity: Severity::High,
-                        path: compose_file.path.clone(),
+                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                     })
                 }
             }
@@ -82,7 +82,7 @@ impl Rule for SecurityOpts {
                             id: RuleID::Owasp("D04".to_string()),
                             details: String::from("Security Opts `no-new-privileges` set to `false`"),
                             severity: Severity::High,
-                            path: compose_file.path.clone(),
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                         })
                     }
                 }
@@ -92,7 +92,7 @@ impl Rule for SecurityOpts {
                     id: RuleID::Owasp("D04".to_string()),
                     details: String::from("Security Opts `no-new-privileges` not set"),
                     severity: Severity::High,
-                    path: compose_file.path.clone(),
+                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                 })
             }
         }
@@ -112,7 +112,7 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: format!("IPv4 Kernal Parameters modified: {}", syscall),
                             severity: Severity::Information,
-                            path: compose_file.path.clone(),
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                         })
                     }
                 }
@@ -132,7 +132,27 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: String::from("Container with high networking privileages"),
                             severity: Severity::Medium,
-                            path: compose_file.path.clone(),
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                        })
+                    }
+                }
+            }
+
+            if let Some(capabilities) = &service.cap_add {
+                alerts.push(Alert {
+                    details: String::from("Using extra Kernal Parameters"),
+                    ..Default::default()
+                });
+
+                for cap in capabilities {
+                    // https://man7.org/linux/man-pages/man7/capabilities.7.html
+                    // https://cloud.redhat.com/blog/increasing-security-of-istio-deployments-by-removing-the-need-for-privileged-containers
+                    if cap.contains("NET_ADMIN") {
+                        alerts.push(Alert {
+                            id: RuleID::None,
+                            details: String::from("Container with high networking privileages"),
+                            severity: Severity::Medium,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                         })
                     }
                     if cap.contains("SYS_ADMIN") {
@@ -140,7 +160,7 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: String::from("Container with high system privileages"),
                             severity: Severity::Medium,
-                            path: compose_file.path.clone(),
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                         })
                     }
                 }

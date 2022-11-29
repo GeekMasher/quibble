@@ -82,7 +82,7 @@ pub struct Alert {
     pub details: String,
     pub severity: Severity,
     pub id: RuleID,
-    pub path: String,
+    pub path: AlertLocation,
 }
 
 impl Alert {
@@ -93,7 +93,22 @@ impl Alert {
 
 impl Display for Alert {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Alert({}, '{}', '{}')", self.severity, self.id, self.details)
+        write!(f, "Alert({}, '{}', '{}', '{}')", self.severity, self.id, self.details, self.path)
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct AlertLocation {
+    pub path: String,
+    pub line: Option<i32>,
+}
+
+impl Display for AlertLocation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.line {
+            Some(l) => { write!(f, "{}#{}", self.path, l) },
+            None => { write!(f, "{}", self.path) }
+        }
     }
 }
 
