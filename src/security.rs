@@ -26,12 +26,12 @@ pub enum Severity {
     Low,
     Information,
     Quality,
+    Hardening
 }
 
 impl Severity {
     /// Filter allows a user to check if a security should be displayed to the user or not
     pub fn filter(&self, filter: String) -> bool {
-        // TODO: Create a better filter function...
         let filter_lower = filter.to_lowercase();
         let display = format!("{}", self).to_lowercase();
 
@@ -65,7 +65,8 @@ impl Display for Severity {
             Self::Medium => { "Medium" },
             Self::Low => { "Low" },
             Self::Information => { "Information" },
-            Self::Quality => { "Quality" }
+            Self::Quality => { "Quality" },
+            Self::Hardening => { "Hardening" },
         };
         write!(f, "{}", sev)
     }

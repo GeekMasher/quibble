@@ -106,6 +106,11 @@ impl Rule for KernalParameters {
     fn check(alerts: &mut Vec<Alert>, compose_file: &super::ComposeFile) {
         for service in compose_file.compose.services.values() {
             if let Some(syscalls) = &service.sysctls {
+                alerts.push(Alert {
+                    details: String::from("Enabling extra syscalls"),
+                    ..Default::default()
+                });
+
                 for syscall in syscalls {
                     if syscall.starts_with("net.ipv4.conf.all") {
                         alerts.push(Alert {
