@@ -61,15 +61,15 @@ impl Default for Severity {
 impl Display for Severity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sev = match self {
-            Self::Critical => { "Critical" },
+            Self::Critical => { "Crit" },
             Self::High => { "High" },
-            Self::Medium => { "Medium" },
+            Self::Medium => { "Med" },
             Self::Low => { "Low" },
-            Self::Information => { "Information" },
-            Self::Quality => { "Quality" },
-            Self::Hardening => { "Hardening" },
+            Self::Information => { "Info" },
+            Self::Quality => { "Qual" },
+            Self::Hardening => { "Hrdn" },
         };
-        write!(f, "{}", sev)
+        write!(f, "{:^12}", sev)
     }
 }
 
@@ -126,7 +126,7 @@ impl Display for Alert {
 }
 
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 /// Alert Location with a path and line number
 pub struct AlertLocation {
     pub path: String,

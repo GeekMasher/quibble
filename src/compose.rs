@@ -37,8 +37,14 @@ pub fn find(path: &Path) -> Result<Vec<ComposeFile>> {
         for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             let subpath = &entry.into_path();
             // TODO: This check should be better
-            if subpath.is_file() && subpath.ends_with("docker-compose.yml") { 
-                debug!("File file: {:?}", subpath);
+            
+            let filter = match subpath.extension() {
+                Some(p) => p == "yml" || p == "yaml",
+                None => false
+            };
+
+            if subpath.is_file() && filter { 
+                debug!("Compose file: {:?}", subpath);
                 if let Ok(c) = ComposeFile::parse(subpath) {
                     compose_files.push(c);
                 }
@@ -75,7 +81,7 @@ impl ComposeFile {
                 })
             },
             Err(err) => {
-                warn!("Failed to load Compose File: {:?}", path);
+                debug!("Failed to load Compose File: {:?}", path);
                 Err(anyhow!("Error: {}", err.to_string()))
             }
         }

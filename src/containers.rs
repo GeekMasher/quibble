@@ -59,7 +59,7 @@ impl ContainerImage {
 impl Default for ContainerImage {
     fn default() -> Self {
         ContainerImage {
-            namespace: String::new(),
+            namespace: String::from("_"),
             name: String::new(),
             instance: String::from("docker.io"),
             tag: String::from("latest"),
