@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     match &arguments.commands {
         ArgumentCommands::Compose { path } => {
             let full_path = canonicalize(path)?;
-            let compose_files = compose::find(&full_path);
+            let compose_files = compose::find(&full_path)?;
 
 
             for cf in compose_files.iter() {
