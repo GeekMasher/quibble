@@ -65,6 +65,7 @@ pub struct Alert {
     pub details: String,
     pub severity: Severity,
     pub id: RuleID,
+    pub path: String,
 }
 
 impl Alert {
@@ -75,12 +76,7 @@ impl Alert {
 
 impl Display for Alert {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if ! matches!(self.id, RuleID::None) {
-            write!(f, "Alert({}, {}, '{}')", self.severity, self.id, self.details)
-        }
-        else {
-            write!(f, "Alert({}, '{}')", self.severity, self.details)
-        }
+        write!(f, "Alert({}, '{}', '{}')", self.severity, self.id, self.details)
     }
 }
 
