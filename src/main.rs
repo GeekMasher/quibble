@@ -6,6 +6,7 @@ use log::{debug, error, info, warn};
 
 mod cli;
 mod compose;
+mod containers;
 mod security;
 
 use crate::{cli::{ArgumentCommands, Arguments}, security::Alert};

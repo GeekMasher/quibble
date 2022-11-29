@@ -4,7 +4,7 @@ use std::{fmt::Display, ops::Index};
 use crate::{compose::ComposeFile, security};
 
 
-const SEVERITIES: &[&str; 9] = &[
+const SEVERITIES: &[&str; 10] = &[
     "critical",
     "high",
     "errors",
@@ -13,7 +13,8 @@ const SEVERITIES: &[&str; 9] = &[
     "warnings",
     "information",
     "notes",
-    "quality"
+    "quality",
+    "all"
 ];
 
 

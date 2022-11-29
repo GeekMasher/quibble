@@ -42,6 +42,35 @@ impl Rule for ComposeVersion {
     } 
 }
 
+/// Container Images
+pub struct ContainerImages;
+
+impl Rule for ContainerImages {
+    fn check(alerts: &mut Vec<Alert>, compose_file: &super::ComposeFile) {
+        for service in compose_file.compose.services.values() {
+            if let Some(image) = &service.image {
+                // Format strings 
+                if image.contains("${") {
+                    alerts.push(Alert {
+                        details: format!("Container Image using Environment Variable: {}", image),
+                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                        ..Default::default()
+                    })
+                } 
+                else {
+                    let container = service.parse_image().unwrap();
+
+                    alerts.push(Alert {
+                        details: format!("Container Image: {}", container),
+                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                        ..Default::default()
+                    })
+                }
+            }
+        }
+    }
+}
+
 
 pub struct DockerSocket;
 
@@ -140,6 +169,15 @@ impl Rule for KernalParameters {
                             path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
                         })
                     }
+
+                    if cap.contains("ALL") {
+                        alerts.push(Alert {
+                            details: String::from("All capabilities are enabled"),
+                            severity: Severity::High,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            ..Default::default()
+                        })
+                    }
                 }
             }
 
@@ -175,10 +213,43 @@ impl Rule for KernalParameters {
 }
 
 
+pub struct EnvironmentVariables;
+
+impl Rule for EnvironmentVariables {
+    fn check(alerts: &mut Vec<Alert>, compose_file: &super::ComposeFile) {
+        for service in compose_file.compose.services.values() {
+            if let Some(envvars) = &service.environment {
+                for envvar in envvars {
+                    if envvar.contains("DEBUG") {
+                        alerts.push(Alert {
+                            id: RuleID::Cwe(String::from("1244")),
+                            details: String::from("Debugging enabled in the container"),
+                            severity: Severity::Medium,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                        })
+                    }
+                    // TODO: better way of detecting this
+                    if envvar.contains("PASSWORD") || envvar.contains("KEY") {
+                        alerts.push(Alert {
+                            id: RuleID::Cwe(String::from("215")),
+                            details: format!("Possible Hardcoded password: {}", envvar),
+                            severity: Severity::High,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                        })
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 pub fn checks(compose_file: &super::ComposeFile) -> Vec<Alert> {
     let mut alerts: Vec<Alert> = Vec::new();
 
     ComposeVersion::check(&mut alerts, compose_file);
+    ContainerImages::check(&mut alerts, compose_file);
     DockerSocket::check(&mut alerts, compose_file);
     SecurityOpts::check(&mut alerts, compose_file);
     KernalParameters::check(&mut alerts, compose_file);

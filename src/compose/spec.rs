@@ -1,7 +1,9 @@
 
 use std::{path::Path, collections::HashMap, fmt::Display};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use serde::{Serialize, Deserialize};
+
+use crate::containers::ContainerImage;
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -38,18 +40,18 @@ impl Display for ComposeSpec {
 pub struct Service {
     // Using external container
     pub image: Option<String>,
-
+    // Container name
     pub container_name: Option<String>,
-
+    // DNS server settings
     pub dns: Option<Vec<String>>,
-    
+    // TODO: string or vec
     pub env_file: Option<String>,
-
+    // Environment
+    pub environment: Option<Vec<String>>,
     // Exposed ports
     pub expose: Option<Vec<String>>,
     // Ports
     pub ports: Option<Vec<String>>,
-
     // Volumes
     pub volumes: Option<Vec<String>>,
     // Lables
@@ -63,4 +65,18 @@ pub struct Service {
 
     pub cap_add: Option<Vec<String>>,
 }
+
+impl Service {
+    pub fn parse_image(&self) -> Result<ContainerImage> {
+        match &self.image {
+            Some(i) => {
+                ContainerImage::parse(i.to_string())
+            },
+            None => {
+                Err(anyhow!("Failed to parse `image`"))
+            }
+        }
+    }
+}
+
 
