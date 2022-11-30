@@ -6,6 +6,9 @@ use clap::{Parser, Subcommand};
 pub struct Arguments {
     #[clap(long, default_value_t=false)]
     pub debug: bool,
+    
+    #[clap(short, long, default_value_t=String::from("./quibble.toml"))]
+    config: String,
 
     #[clap(subcommand)]
     pub commands: ArgumentCommands,
@@ -24,7 +27,13 @@ pub enum ArgumentCommands {
         filter: String,
     },
     // Scan registry containers
-    Registry,
+    Registry {
+        #[clap(short, long)]
+        registry: String,
+
+        #[clap(short, long)]
+        image: Option<String>,
+    },
     // Scan Container / Docker files directory
     Build
 }

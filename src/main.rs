@@ -61,6 +61,10 @@ fn main() -> Result<()> {
                 };
                 println!("[{}] {}", severity, &result.details);
             }
+        },
+        ArgumentCommands::Registry { registry, image } => {
+            println!(" >> {} :: {:?}", registry, image);
+            todo!("Coming soon...");
         }
         _ => {
             error!("Unsupported sub command...");
