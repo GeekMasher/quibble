@@ -45,9 +45,17 @@ impl Rule for ComposeVersion {
 /// Container Images
 pub struct ContainerImages;
 
+const CONTAINER_REGISTRIES: &[&str; 2] = &[ 
+    "docker.io",
+    "ghcr.io"
+];
+
 impl Rule for ContainerImages {
     fn check(alerts: &mut Vec<Alert>, compose_file: &super::ComposeFile) {
         for service in compose_file.compose.services.values() {
+            // TODO: Manually building project
+
+            // Pulling remote image
             if let Some(image) = &service.image {
                 // Format strings 
                 if image.contains("${") {
@@ -64,7 +72,31 @@ impl Rule for ContainerImages {
                         details: format!("Container Image: {}", container),
                         path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
                         ..Default::default()
-                    })
+                    });
+
+                    // Rule: Pinned to latest rolling container image
+                    // - The main reason behind this is if you are using watchtower or other
+                    // service to update containers it might cause issues
+                    if container.tag.as_str() == "latest" {
+                        alerts.push(Alert {
+                            details: String::from("Container using latest / rolling release tag"),
+                            severity: Severity::Low,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            ..Default::default()
+                        });
+                    }
+
+                    // Rule: Unknown registry
+                    // - Which registries could be in here?
+                    // - How does a user update / add approved registries?
+                    if ! CONTAINER_REGISTRIES.contains(&container.instance.as_str()) {
+                        alerts.push(Alert {
+                            details: format!("Container from unknown registry: {}", &container.instance),
+                            severity: Severity::Low,
+                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            ..Default::default()
+                        });
+                    }
                 }
             }
         }
