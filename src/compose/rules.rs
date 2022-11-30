@@ -1,54 +1,52 @@
-
 use log::debug;
 
-use crate::security::{Rule, Alert, RuleID, Severity, AlertLocation};
-
+use crate::security::{Alert, AlertLocation, Rule, RuleID, Severity};
 
 pub struct ComposeVersion;
 
 impl Rule for ComposeVersion {
-   fn check(alerts: &mut Vec<crate::security::Alert>, compose_file: &super::ComposeFile) {
+    fn check(alerts: &mut Vec<crate::security::Alert>, compose_file: &super::ComposeFile) {
         debug!("Compose Version rule enabled...");
         // https://docs.docker.com/compose/compose-file/compose-versioning/
         match compose_file.compose.version.as_str() {
-            "1" => {
-                alerts.push(Alert {
-                    id: RuleID::None,
-                    details: String::from("Compose v1"),
-                    severity: Severity::Medium,
-                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
-                })
-            },
-            "2" | "2.0" | "2.1" | "2.2" | "2.3" | "2.4" => {
-                alerts.push(Alert {
-                    id: RuleID::None,
-                    details: String::from("Compose v2 used"),
-                    severity: Severity::Low,
-                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
-                })
-            },
-            "3" | "3.0" | "3.1" | "3.2" | "3.3" | "3.4" | "3.5" => {
-                alerts.push(Alert {
-                    id: crate::security::RuleID::None,
-                    details: String::from("Using old Compose v3 spec, consider upgrading"),
-                    severity: Severity::Low,
-                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
-                })
-            },
+            "1" => alerts.push(Alert {
+                id: RuleID::None,
+                details: String::from("Compose v1"),
+                severity: Severity::Medium,
+                path: AlertLocation {
+                    path: compose_file.path.clone(),
+                    ..Default::default()
+                },
+            }),
+            "2" | "2.0" | "2.1" | "2.2" | "2.3" | "2.4" => alerts.push(Alert {
+                id: RuleID::None,
+                details: String::from("Compose v2 used"),
+                severity: Severity::Low,
+                path: AlertLocation {
+                    path: compose_file.path.clone(),
+                    ..Default::default()
+                },
+            }),
+            "3" | "3.0" | "3.1" | "3.2" | "3.3" | "3.4" | "3.5" => alerts.push(Alert {
+                id: crate::security::RuleID::None,
+                details: String::from("Using old Compose v3 spec, consider upgrading"),
+                severity: Severity::Low,
+                path: AlertLocation {
+                    path: compose_file.path.clone(),
+                    ..Default::default()
+                },
+            }),
             _ => {
                 debug!("Unknown or secure version of Docker Compose")
             }
         }
-    } 
+    }
 }
 
 /// Container Images
 pub struct ContainerImages;
 
-const CONTAINER_REGISTRIES: &[&str; 2] = &[ 
-    "docker.io",
-    "ghcr.io"
-];
+const CONTAINER_REGISTRIES: &[&str; 2] = &["docker.io", "ghcr.io"];
 
 impl Rule for ContainerImages {
     fn check(alerts: &mut Vec<Alert>, compose_file: &super::ComposeFile) {
@@ -57,20 +55,25 @@ impl Rule for ContainerImages {
 
             // Pulling remote image
             if let Some(image) = &service.image {
-                // Format strings 
+                // Format strings
                 if image.contains("${") {
                     alerts.push(Alert {
                         details: format!("Container Image using Environment Variable: {}", image),
-                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                        path: AlertLocation {
+                            path: compose_file.path.clone(),
+                            ..Default::default()
+                        },
                         ..Default::default()
                     })
-                } 
-                else {
+                } else {
                     let container = service.parse_image().unwrap();
 
                     alerts.push(Alert {
                         details: format!("Container Image: {}", container),
-                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                        path: AlertLocation {
+                            path: compose_file.path.clone(),
+                            ..Default::default()
+                        },
                         ..Default::default()
                     });
 
@@ -81,7 +84,10 @@ impl Rule for ContainerImages {
                         alerts.push(Alert {
                             details: String::from("Container using latest / rolling release tag"),
                             severity: Severity::Low,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                             ..Default::default()
                         });
                     }
@@ -89,11 +95,17 @@ impl Rule for ContainerImages {
                     // Rule: Unknown registry
                     // - Which registries could be in here?
                     // - How does a user update / add approved registries?
-                    if ! CONTAINER_REGISTRIES.contains(&container.instance.as_str()) {
+                    if !CONTAINER_REGISTRIES.contains(&container.instance.as_str()) {
                         alerts.push(Alert {
-                            details: format!("Container from unknown registry: {}", &container.instance),
+                            details: format!(
+                                "Container from unknown registry: {}",
+                                &container.instance
+                            ),
                             severity: Severity::Low,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                             ..Default::default()
                         });
                     }
@@ -102,7 +114,6 @@ impl Rule for ContainerImages {
         }
     }
 }
-
 
 pub struct DockerSocket;
 
@@ -112,7 +123,8 @@ impl Rule for DockerSocket {
 
         for service in compose_file.compose.services.values() {
             if let Some(volumes) = &service.volumes {
-                let result = volumes.iter()
+                let result = volumes
+                    .iter()
                     .find(|&s| s.starts_with("/var/run/docker.sock"));
 
                 if result.is_some() {
@@ -120,16 +132,16 @@ impl Rule for DockerSocket {
                         id: RuleID::Owasp("D04".to_string()),
                         details: String::from("Docker Socket being passed into container"),
                         severity: Severity::High,
-                        path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                        path: AlertLocation {
+                            path: compose_file.path.clone(),
+                            ..Default::default()
+                        },
                     })
                 }
             }
-
         }
     }
-    
 }
-
 
 pub struct SecurityOpts;
 
@@ -141,23 +153,29 @@ impl Rule for SecurityOpts {
                     if secopt.starts_with("no-new-privileges") && secopt.ends_with("false") {
                         alerts.push(Alert {
                             id: RuleID::Owasp("D04".to_string()),
-                            details: String::from("Security Opts `no-new-privileges` set to `false`"),
+                            details: String::from(
+                                "Security Opts `no-new-privileges` set to `false`",
+                            ),
                             severity: Severity::High,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                 }
-            }
-            else {
+            } else {
                 alerts.push(Alert {
                     id: RuleID::Owasp("D04".to_string()),
                     details: String::from("Security Opts `no-new-privileges` not set"),
                     severity: Severity::High,
-                    path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                    path: AlertLocation {
+                        path: compose_file.path.clone(),
+                        ..Default::default()
+                    },
                 })
             }
         }
-
     }
 }
 
@@ -178,7 +196,10 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: format!("IPv4 Kernal Parameters modified: {}", syscall),
                             severity: Severity::Information,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                 }
@@ -198,7 +219,10 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: String::from("Container with high networking privileages"),
                             severity: Severity::Medium,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
 
@@ -206,7 +230,10 @@ impl Rule for KernalParameters {
                         alerts.push(Alert {
                             details: String::from("All capabilities are enabled"),
                             severity: Severity::High,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()},
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                             ..Default::default()
                         })
                     }
@@ -227,7 +254,10 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: String::from("Container with high networking privileages"),
                             severity: Severity::Medium,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                     if cap.contains("SYS_ADMIN") {
@@ -235,7 +265,10 @@ impl Rule for KernalParameters {
                             id: RuleID::None,
                             details: String::from("Container with high system privileages"),
                             severity: Severity::Medium,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                 }
@@ -243,7 +276,6 @@ impl Rule for KernalParameters {
         }
     }
 }
-
 
 pub struct EnvironmentVariables;
 
@@ -257,7 +289,10 @@ impl Rule for EnvironmentVariables {
                             id: RuleID::Cwe(String::from("1244")),
                             details: String::from("Debugging enabled in the container"),
                             severity: Severity::Medium,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                     // TODO: better way of detecting this
@@ -266,7 +301,10 @@ impl Rule for EnvironmentVariables {
                             id: RuleID::Cwe(String::from("215")),
                             details: format!("Possible Hardcoded password: {}", envvar),
                             severity: Severity::High,
-                            path: AlertLocation { path: compose_file.path.clone(), ..Default::default()}
+                            path: AlertLocation {
+                                path: compose_file.path.clone(),
+                                ..Default::default()
+                            },
                         })
                     }
                 }
@@ -274,8 +312,6 @@ impl Rule for EnvironmentVariables {
         }
     }
 }
-
-
 
 pub fn checks(compose_file: &super::ComposeFile) -> Vec<Alert> {
     let mut alerts: Vec<Alert> = Vec::new();
@@ -285,7 +321,6 @@ pub fn checks(compose_file: &super::ComposeFile) -> Vec<Alert> {
     DockerSocket::check(&mut alerts, compose_file);
     SecurityOpts::check(&mut alerts, compose_file);
     KernalParameters::check(&mut alerts, compose_file);
-    
+
     alerts
 }
-

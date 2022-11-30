@@ -10,14 +10,17 @@ mod compose;
 mod containers;
 mod security;
 
-use crate::{cli::{ArgumentCommands, Arguments}, security::Alert};
+use crate::{
+    cli::{ArgumentCommands, Arguments, AUTHOR, BANNER, VERSION_NUMBER},
+    security::Alert,
+};
 
 fn main() -> Result<()> {
     let arguments = Arguments::parse();
 
     let log_level = match arguments.debug {
         false => log::LevelFilter::Info,
-        true => log::LevelFilter::Debug
+        true => log::LevelFilter::Debug,
     };
 
     env_logger::builder()
@@ -25,9 +28,18 @@ fn main() -> Result<()> {
         .filter_level(log_level)
         .init();
 
+    if !arguments.disable_banner {
+        println!(
+            "{}    {} - v{}",
+            style(BANNER).green(),
+            style(AUTHOR).red(),
+            style(VERSION_NUMBER).blue()
+        );
+    }
+
     debug!("Finished initialising, starting main workflow...");
 
-    // Subcommands 
+    // Subcommands
     match &arguments.commands {
         ArgumentCommands::Compose { path, filter } => {
             let full_path = canonicalize(path)?;
@@ -42,7 +54,7 @@ fn main() -> Result<()> {
 
             let mut current = String::new();
             for result in results {
-                if ! result.severity.filter(filter.to_string()) {
+                if !result.severity.filter(filter.to_string()) {
                     debug!("Skipping: {}", result);
                     continue;
                 }
@@ -53,15 +65,17 @@ fn main() -> Result<()> {
                 }
 
                 let severity = match result.severity {
-                    security::Severity::Critical |
-                    security::Severity::High => style(&result.severity).red(),
-                    security::Severity::Medium |
-                    security::Severity::Low => style(&result.severity).yellow(),
-                    _ => style(&result.severity).green()
+                    security::Severity::Critical | security::Severity::High => {
+                        style(&result.severity).red()
+                    }
+                    security::Severity::Medium | security::Severity::Low => {
+                        style(&result.severity).yellow()
+                    }
+                    _ => style(&result.severity).green(),
                 };
                 println!("[{}] {}", severity, &result.details);
             }
-        },
+        }
         ArgumentCommands::Registry { registry, image } => {
             println!(" >> {} :: {:?}", registry, image);
             todo!("Coming soon...");
@@ -71,6 +85,6 @@ fn main() -> Result<()> {
             todo!("Lets write some code...");
         }
     }
-    
+
     Ok(())
 }

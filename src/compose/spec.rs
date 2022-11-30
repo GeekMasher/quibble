@@ -1,13 +1,11 @@
-
-use std::{path::Path, collections::HashMap, fmt::Display};
-use anyhow::{Result, anyhow};
-use serde::{Serialize, Deserialize};
+use anyhow::{anyhow, Result};
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, fmt::Display, path::Path};
 
 use crate::containers::ContainerImage;
 
-
 #[derive(Debug, Serialize, Deserialize)]
-/// Based on the current spec 
+/// Based on the current spec
 /// https://github.com/compose-spec/compose-spec/blob/master/schema/compose-spec.json
 pub struct ComposeSpec {
     // Version being used
@@ -16,7 +14,7 @@ pub struct ComposeSpec {
     pub name: Option<String>,
 
     // HashMap of services
-    pub services: HashMap<String, Service>
+    pub services: HashMap<String, Service>,
 }
 
 impl ComposeSpec {
@@ -31,7 +29,7 @@ impl Display for ComposeSpec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.name {
             Some(name) => write!(f, "Compose('{}', '{}')", self.version, name),
-            None => write!(f, "Compose('{}')", self.version)
+            None => write!(f, "Compose('{}')", self.version),
         }
     }
 }
@@ -69,14 +67,8 @@ pub struct Service {
 impl Service {
     pub fn parse_image(&self) -> Result<ContainerImage> {
         match &self.image {
-            Some(i) => {
-                ContainerImage::parse(i.to_string())
-            },
-            None => {
-                Err(anyhow!("Failed to parse `image`"))
-            }
+            Some(i) => ContainerImage::parse(i.to_string()),
+            None => Err(anyhow!("Failed to parse `image`")),
         }
     }
 }
-
-

@@ -3,7 +3,6 @@ use std::{fmt::Display, ops::Index};
 
 use crate::{compose::ComposeFile, security};
 
-
 const SEVERITIES: &[&str; 10] = &[
     "critical",
     "high",
@@ -14,9 +13,8 @@ const SEVERITIES: &[&str; 10] = &[
     "information",
     "notes",
     "quality",
-    "all"
+    "all",
 ];
-
 
 #[derive(Debug)]
 /// Severity for the alert
@@ -27,7 +25,7 @@ pub enum Severity {
     Low,
     Information,
     Quality,
-    Hardening
+    Hardening,
 }
 
 impl Severity {
@@ -53,33 +51,32 @@ impl Severity {
 }
 
 impl Default for Severity {
-   fn default() -> Self {
+    fn default() -> Self {
         Self::Information
-    } 
+    }
 }
 
 impl Display for Severity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sev = match self {
-            Self::Critical => { "Crit" },
-            Self::High => { "High" },
-            Self::Medium => { "Med" },
-            Self::Low => { "Low" },
-            Self::Information => { "Info" },
-            Self::Quality => { "Qual" },
-            Self::Hardening => { "Hrdn" },
+            Self::Critical => "Crit",
+            Self::High => "High",
+            Self::Medium => "Med",
+            Self::Low => "Low",
+            Self::Information => "Info",
+            Self::Quality => "Qual",
+            Self::Hardening => "Hrdn",
         };
         write!(f, "{:^12}", sev)
     }
 }
-
 
 #[derive(Debug)]
 /// Rule ID using CWE or OWASP Docker Top 10
 pub enum RuleID {
     Cwe(String),
     Owasp(String),
-    None
+    None,
 }
 
 impl Default for RuleID {
@@ -91,14 +88,17 @@ impl Default for RuleID {
 impl Display for RuleID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let id = match self {
-            RuleID::None => { "N/A".to_string() },
-            RuleID::Owasp(i) => { format!("OWASP-{}", i) },
-            RuleID::Cwe(c) => { format!("CWE-{}", c) }
+            RuleID::None => "N/A".to_string(),
+            RuleID::Owasp(i) => {
+                format!("OWASP-{}", i)
+            }
+            RuleID::Cwe(c) => {
+                format!("CWE-{}", c)
+            }
         };
         write!(f, "{}", id)
     }
 }
-
 
 #[derive(Debug, Default)]
 /// Security Alert and metadata
@@ -115,16 +115,21 @@ pub struct Alert {
 
 impl Alert {
     pub fn new() -> Self {
-        Alert { .. Default::default() }
+        Alert {
+            ..Default::default()
+        }
     }
 }
 
 impl Display for Alert {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Alert({}, '{}', '{}', '{}')", self.severity, self.id, self.details, self.path)
+        write!(
+            f,
+            "Alert({}, '{}', '{}', '{}')",
+            self.severity, self.id, self.details, self.path
+        )
     }
 }
-
 
 #[derive(Debug, Default, PartialEq, Eq)]
 /// Alert Location with a path and line number
@@ -136,19 +141,20 @@ pub struct AlertLocation {
 impl Display for AlertLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.line {
-            Some(l) => { write!(f, "{}#{}", self.path, l) },
-            None => { write!(f, "{}", self.path) }
+            Some(l) => {
+                write!(f, "{}#{}", self.path, l)
+            }
+            None => {
+                write!(f, "{}", self.path)
+            }
         }
     }
 }
-
 
 /// Rule Trait which all rules need to follow
 pub trait Rule {
     fn check(alerts: &mut Vec<Alert>, compose_file: &ComposeFile);
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -161,5 +167,3 @@ mod tests {
         assert!(!Severity::Low.filter(String::from("medium")));
     }
 }
-
-

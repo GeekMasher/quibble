@@ -1,8 +1,7 @@
 use std::fmt::Display;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use log::warn;
-
 
 #[derive(Debug)]
 /// Container Image
@@ -15,7 +14,7 @@ pub struct ContainerImage {
     pub instance: String,
     /// Tag
     pub tag: String,
-    /// Digest 
+    /// Digest
     pub digest: Option<String>,
     /// Signature
     pub signature: Option<String>,
@@ -23,7 +22,9 @@ pub struct ContainerImage {
 
 impl ContainerImage {
     pub fn new() -> Self {
-        ContainerImage { .. Default::default() }
+        ContainerImage {
+            ..Default::default()
+        }
     }
 
     pub fn parse(container: String) -> Result<Self> {
@@ -32,17 +33,14 @@ impl ContainerImage {
 
         if slash_split.len() == 1 {
             result.name = slash_split.pop().unwrap_or("").to_string();
-        }
-        else if slash_split.len() == 2 {
+        } else if slash_split.len() == 2 {
             result.name = slash_split.pop().unwrap_or("").to_string();
             result.namespace = slash_split.pop().unwrap_or("").to_string();
-        }
-        else if slash_split.len() == 3 {
+        } else if slash_split.len() == 3 {
             result.name = slash_split.pop().unwrap_or("").to_string();
             result.namespace = slash_split.pop().unwrap_or("").to_string();
             result.instance = slash_split.pop().unwrap_or("").to_string();
-        }
-        else {
+        } else {
             warn!("Unsupported container syntax, please report as an Issue");
             return Err(anyhow!("Unsupported container splitting:"));
         }
@@ -64,17 +62,20 @@ impl Default for ContainerImage {
             instance: String::from("docker.io"),
             tag: String::from("latest"),
             digest: None,
-            signature: None
+            signature: None,
         }
     }
 }
 
 impl Display for ContainerImage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}/{}:{}", self.instance, self.namespace, self.name, self.tag)
+        write!(
+            f,
+            "{}/{}/{}:{}",
+            self.instance, self.namespace, self.name, self.tag
+        )
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -100,7 +101,7 @@ mod tests {
         assert_eq!(image.instance, String::from("docker.io"));
         assert_eq!(image.tag, String::from("latest"));
     }
-    
+
     #[test]
     fn parse_tag() {
         let container = String::from("gitea/gitea:1.20");
@@ -123,4 +124,3 @@ mod tests {
         assert_eq!(image.tag, String::from("latest"));
     }
 }
-
