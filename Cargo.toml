@@ -1,7 +1,18 @@
 [package]
 name = "quibble"
 version = "0.1.0"
+
+authors = ['GeekMasher']
+description = "A container security tool written in Rust focusing on compose based configuration as code"
+readme = "README.md"
+homepage = "https://github.com/GeekMasher/quibble"
+repository = "https://github.com/GeekMasher/quibble"
+license = "MIT"
+
+keywords = ["containers", "security", "compose"]
+
 edition = "2021"
+rust-version = "1.67"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,10 +28,9 @@ anyhow = "1"
 # logging
 log = "0.4"
 env_logger = "0.10"
-
+# Serialization
 serde = { version = "1.0", features = ["derive"]}
 serde_yaml = "0.9"
-semver = "1"
 
 walkdir = "2.3"
 
