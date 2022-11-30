@@ -37,7 +37,7 @@ This is a very simple util to quickly scan and detect various security or inform
 quibble compose --path /srv
 ```
 
-![screenshot of quibble on a directory containing many different compose files](resources/quibble-output1.jpg)
+![screenshot of quibble on a directory containing many different compose files](./assets/quibble-output1.jpg)
 
 
 ## Contributing
