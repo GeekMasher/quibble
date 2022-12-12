@@ -54,7 +54,7 @@ Contributions come in many forms. You could:
 [issues that require feedback]: https://github.com/GeekMasher/quibble/issues?q=is%3Aissue+is%3Aopen+label%3A%22feedback+wanted%22
 [pull requests]: https://github.com/GeekMasher/quibble/pulls
 
-We aim to keep Rocket's code quality at the highest level. This means that any
+We aim to keep Quibble's code quality at the highest level. This means that any
 code you contribute must be:
 
   * **Commented:** Complex and non-obvious functionality must be properly
@@ -73,5 +73,3 @@ code you contribute must be:
 ## License
 
 All the code in this repository is under the [MIT License](./LICENSE).
-
-
