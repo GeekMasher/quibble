@@ -1,6 +1,6 @@
 [package]
 name = "quibble"
-version = "0.1.0"
+version = "0.2.0"
 
 authors = ['GeekMasher']
 description = "A container security tool written in Rust focusing on compose based configuration as code"
@@ -31,6 +31,8 @@ env_logger = "0.10"
 # Serialization
 serde = { version = "1.0", features = ["derive"]}
 serde_yaml = "0.9"
+serde_json = "1.0"
+toml = "0.5"
 
 walkdir = "2.3"
 

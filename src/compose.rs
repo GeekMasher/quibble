@@ -22,10 +22,9 @@ pub fn find(path: &Path) -> Result<Vec<ComposeFile>> {
     if path.is_file() {
         debug!("Path is a file, parsing compose file");
 
-        if let Ok(c) = ComposeFile::parse(path) {
-            compose_files.push(c)
-        } else {
-            return Err(anyhow!("Failed to load compose file: {}", path.display()));
+        match ComposeFile::parse(path) {
+            Ok(c) => compose_files.push(c),
+            Err(err) => return Err(err),
         }
     } else if path.is_dir() {
         for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {

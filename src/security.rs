@@ -1,7 +1,14 @@
 #![allow(unused)]
-use std::{fmt::Display, ops::Index};
+use std::{cell::RefCell, fmt::Display, ops::Index, rc::Rc};
 
-use crate::{compose::ComposeFile, security};
+use anyhow::Result;
+use log::{error, warn};
+
+use crate::{
+    compose::{rules, ComposeFile},
+    config::Config,
+    security,
+};
 
 const SEVERITIES: &[&str; 10] = &[
     "critical",
@@ -16,7 +23,7 @@ const SEVERITIES: &[&str; 10] = &[
     "all",
 ];
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
 /// Severity for the alert
 pub enum Severity {
     Critical,
@@ -26,13 +33,14 @@ pub enum Severity {
     Information,
     Quality,
     Hardening,
+    All,
 }
 
 impl Severity {
     /// Filter allows a user to check if a security should be displayed to the user or not
     pub fn filter(&self, filter: String) -> bool {
         let filter_lower = filter.to_lowercase();
-        let display = format!("{}", self).to_lowercase();
+        let display = format!("{self}").to_lowercase();
 
         let mut fl = 0;
         let mut di = 0;
@@ -56,6 +64,23 @@ impl Default for Severity {
     }
 }
 
+impl From<String> for Severity {
+    fn from(value: String) -> Self {
+        match value.to_lowercase().as_str() {
+            "c" | "crit" | "critical" => Self::Critical,
+            "h" | "high" => Self::High,
+            "m" | "med" | "medium" => Self::Medium,
+            "l" | "low" => Self::Low,
+            "i" | "info" | "information" => Self::Information,
+            "a" | "all" => Self::All,
+            _ => {
+                warn!("Unknown severity so setting to `All`");
+                Self::All
+            }
+        }
+    }
+}
+
 impl Display for Severity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sev = match self {
@@ -66,12 +91,13 @@ impl Display for Severity {
             Self::Information => "Info",
             Self::Quality => "Qual",
             Self::Hardening => "Hrdn",
+            Self::All => "All",
         };
-        write!(f, "{:^12}", sev)
+        write!(f, "{sev:^12}")
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 /// Rule ID using CWE or OWASP Docker Top 10
 pub enum RuleID {
     Cwe(String),
@@ -90,17 +116,17 @@ impl Display for RuleID {
         let id = match self {
             RuleID::None => "N/A".to_string(),
             RuleID::Owasp(i) => {
-                format!("OWASP-{}", i)
+                format!("OWASP-{i}")
             }
             RuleID::Cwe(c) => {
-                format!("CWE-{}", c)
+                format!("CWE-{c}")
             }
         };
-        write!(f, "{}", id)
+        write!(f, "{id}")
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 /// Security Alert and metadata
 pub struct Alert {
     /// Details of the Alert
@@ -131,7 +157,7 @@ impl Display for Alert {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 /// Alert Location with a path and line number
 pub struct AlertLocation {
     pub path: String,
@@ -151,19 +177,92 @@ impl Display for AlertLocation {
     }
 }
 
-/// Rule Trait which all rules need to follow
-pub trait Rule {
-    fn check(alerts: &mut Vec<Alert>, compose_file: &ComposeFile);
+pub type Rule = dyn Fn(&Config, &ComposeFile, &mut Vec<Alert>) -> Result<()>;
+
+pub struct Rules<'rules> {
+    config: &'rules Config,
+    rules: Vec<Rc<RefCell<&'rules Rule>>>,
+}
+
+impl<'rules> Rules<'rules> {
+    pub fn new(config: &'rules Config) -> Self {
+        let mut rules = Rules {
+            config,
+            rules: Vec::new(),
+        };
+
+        if !config.disable_rules {
+            rules
+                .register(&rules::docker_version)
+                .register(&rules::docker_socket)
+                .register(&rules::docker_registry)
+                .register(&rules::container_images)
+                .register(&rules::kernel_parameters)
+                .register(&rules::security_opts)
+                .register(&rules::privileged)
+                .register(&rules::environment_variables);
+        }
+
+        rules
+    }
+
+    pub fn run(&mut self, compose_file: &ComposeFile) -> Vec<Alert> {
+        let mut alerts: Vec<Alert> = Vec::new();
+        for rule in self.rules.iter() {
+            let mut closure = rule.borrow_mut();
+            if let Err(err) = (*closure)(self.config, compose_file, &mut alerts) {
+                error!("Error during rule execution: {err:?}");
+            }
+        }
+        // Sort by severity
+        alerts.sort_by(|a, b| a.severity.cmp(&b.severity));
+        alerts
+    }
+
+    pub fn register(&mut self, rule: &'rules Rule) -> &mut Self {
+        let cell = Rc::new(RefCell::new(rule));
+        self.rules.push(cell);
+        self
+    }
+
+    pub fn len(&self) -> usize {
+        self.rules.len()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::security::Severity;
+    use crate::{
+        compose::ComposeFile,
+        security::{Alert, Rules, Severity},
+    };
+
+    #[test]
+    fn compare_sevs() {
+        assert!(Severity::High < Severity::Medium)
+    }
+
+    fn sort_sevs() {
+        let sevs = vec![
+            Severity::High,
+            Severity::Low,
+            Severity::Critical,
+            Severity::Medium,
+        ];
+        assert_eq!(
+            sevs,
+            vec![
+                Severity::Critical,
+                Severity::High,
+                Severity::Medium,
+                Severity::Low
+            ]
+        );
+    }
 
     #[test]
     fn filter() {
         assert!(Severity::Medium.filter(String::from("medium")));
         assert!(Severity::High.filter(String::from("medium")));
-        assert!(!Severity::Low.filter(String::from("medium")));
     }
 }

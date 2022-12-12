@@ -86,7 +86,7 @@ mod tests {
         let container = String::from("gitea:latest");
         let image = ContainerImage::parse(container).unwrap();
 
-        assert_eq!(image.namespace, String::from(""));
+        assert_eq!(image.namespace, String::from("_"));
         assert_eq!(image.name, String::from("gitea"));
         assert_eq!(image.instance, String::from("docker.io"));
         assert_eq!(image.tag, String::from("latest"));

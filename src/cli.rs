@@ -45,13 +45,17 @@ pub enum ArgumentCommands {
         )]
         path: String,
 
-        #[clap(
-            short,
-            long,
-            help = "Filter for which alerts are shown",
-            default_value_t=String::from("errors")
-        )]
-        filter: String,
+        #[clap(short, long, help = "Output Location")]
+        output: Option<String>,
+
+        #[clap(long, help = "Output Format", default_value_t=String::from("cli"))]
+        format: String,
+
+        #[clap(short, long, help = "Filter for which alerts are shown")]
+        filter: Option<String>,
+
+        #[clap(long, help = "Disable / Enabled CLI failure", default_value_t = false)]
+        disable_fail: bool,
     },
     // Scan registry containers
     Registry {

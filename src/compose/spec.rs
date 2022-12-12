@@ -38,30 +38,43 @@ impl Display for ComposeSpec {
 pub struct Service {
     // Using external container
     pub image: Option<String>,
+
+    // Manually building container
+    pub build: Option<StringOrBuild>,
+
     // Container name
     pub container_name: Option<String>,
+
     // DNS server settings
-    pub dns: Option<Vec<String>>,
-    // TODO: string or vec
-    pub env_file: Option<String>,
+    pub dns: Option<StringOrList>,
+
+    // Environment files
+    pub env_file: Option<StringOrList>,
+
     // Environment
     pub environment: Option<Vec<String>>,
+
     // Exposed ports
-    pub expose: Option<Vec<String>>,
+    pub expose: Option<Vec<StringOrNumber>>,
+
     // Ports
-    pub ports: Option<Vec<String>>,
+    pub ports: Option<Vec<StringOrNumber>>,
+
     // Volumes
     pub volumes: Option<Vec<String>>,
+
     // Lables
-    pub lables: Option<Vec<String>>,
+    pub lables: Option<ListOrHashMap>,
 
     pub security_opt: Option<Vec<String>>,
 
     pub restart: Option<String>,
 
-    pub sysctls: Option<Vec<String>>,
+    pub sysctls: Option<ListOrHashMap>,
 
     pub cap_add: Option<Vec<String>>,
+
+    pub privileged: Option<bool>,
 }
 
 impl Service {
@@ -71,4 +84,41 @@ impl Service {
             None => Err(anyhow!("Failed to parse `image`")),
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Build {
+    pub context: Option<String>,
+    pub dockerfile: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StringOrBuild {
+    Build(Build),
+    Str(String),
+}
+
+
+// Serde Generic Enums
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StringOrNumber {
+    Num(usize),
+    Str(String),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StringOrList {
+    VecStr(Vec<String>),
+    Str(String),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ListOrHashMap {
+    Hash(HashMap<String, String>),
+    Vec(Vec<String>),
 }
