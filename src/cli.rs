@@ -13,18 +13,16 @@ pub const BANNER: &str = r#" _____       _ _     _     _
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Arguments {
-    #[clap(long, help = "Enable Debugging", default_value_t = false)]
+    /// Enable Debugging
+    #[clap(long, default_value_t = false)]
     pub debug: bool,
 
-    #[clap(long, help = "Disable Quibble Banner", default_value_t = false)]
+    /// Disable Quibble Banner
+    #[clap(long, default_value_t = false)]
     pub disable_banner: bool,
 
-    #[clap(
-        short,
-        long,
-        help = "Configuration file path",
-        default_value_t=String::from("./quibble.toml")
-    )]
+    /// Configuration file path
+    #[clap(short, long, default_value_t=String::from("./quibble.toml"))]
     pub config: String,
 
     #[clap(subcommand)]
@@ -33,36 +31,38 @@ pub struct Arguments {
 
 #[derive(Subcommand, Debug)]
 pub enum ArgumentCommands {
-    // Check if setup and tools are all avalible
+    /// Check if setup and tools are all avalible
     Check,
-    // Scan compose file(s)
+    /// Scan compose file(s)
     Compose {
-        #[clap(
-            short,
-            long,
-            help = "Folder or compose file path",
-            default_value_t=String::from("./")
-        )]
+        /// Folder or compose file path
+        #[clap(short, long, default_value_t=String::from("./"))]
         path: String,
 
-        #[clap(short, long, help = "Output Location")]
+        /// Output Location
+        #[clap(short, long)]
         output: Option<String>,
 
-        #[clap(long, help = "Output Format", default_value_t=String::from("cli"))]
+        /// Output Format
+        #[clap(long, default_value_t=String::from("cli"))]
         format: String,
 
-        #[clap(short, long, help = "Filter for which alerts are shown")]
+        /// Filter for which alerts are shown
+        #[clap(short, long)]
         filter: Option<String>,
 
-        #[clap(long, help = "Disable / Enabled CLI failure", default_value_t = false)]
+        /// Disable / Enabled CLI failure
+        #[clap(long, default_value_t = false)]
         disable_fail: bool,
     },
-    // Scan registry containers
+    /// Scan registry containers
     Registry {
-        #[clap(short, long, help = "Domain of the registry wanting to scan")]
+        /// Domain of the registry wanting to scan
+        #[clap(short, long)]
         registry: String,
 
-        #[clap(short, long, help = "Image name and tag from the registry")]
+        /// Image name and tag from the registry
+        #[clap(short, long)]
         image: Option<String>,
     },
 }
