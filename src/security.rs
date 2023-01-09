@@ -23,13 +23,14 @@ const SEVERITIES: &[&str; 10] = &[
     "all",
 ];
 
-#[derive(Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Debug, Default, PartialEq, Eq, Ord, PartialOrd)]
 /// Severity for the alert
 pub enum Severity {
     Critical,
     High,
     Medium,
     Low,
+    #[default]
     Information,
     Quality,
     Hardening,
@@ -55,12 +56,6 @@ impl Severity {
         }
 
         di <= fl
-    }
-}
-
-impl Default for Severity {
-    fn default() -> Self {
-        Self::Information
     }
 }
 
@@ -97,18 +92,13 @@ impl Display for Severity {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 /// Rule ID using CWE or OWASP Docker Top 10
 pub enum RuleID {
     Cwe(String),
     Owasp(String),
+    #[default]
     None,
-}
-
-impl Default for RuleID {
-    fn default() -> Self {
-        RuleID::None
-    }
 }
 
 impl Display for RuleID {
