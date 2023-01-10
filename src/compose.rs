@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Result};
 use log::{debug, warn};
-use std::{fmt::Display, path::Path};
+use std::{
+    fmt::Display,
+    path::{Path, PathBuf},
+};
 
 pub mod rules;
 pub mod spec;
@@ -12,7 +15,7 @@ use walkdir::WalkDir;
 use crate::compose::ComposeSpec;
 
 pub struct ComposeFile {
-    pub path: String,
+    pub path: PathBuf,
     pub compose: ComposeSpec,
 }
 
@@ -58,7 +61,7 @@ pub fn find(path: &Path) -> Result<Vec<ComposeFile>> {
 
 impl Display for ComposeFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ComposeFile('{}')", self.path)
+        write!(f, "ComposeFile('{}')", self.path.display())
     }
 }
 
@@ -66,7 +69,7 @@ impl ComposeFile {
     pub fn parse(path: &Path) -> Result<Self> {
         match ComposeSpec::parse(path) {
             Ok(cs) => Ok(ComposeFile {
-                path: path.display().to_string(),
+                path: path.to_owned(),
                 compose: cs,
             }),
             Err(err) => {

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 pub const VERSION_NUMBER: &str = env!("CARGO_PKG_VERSION");
@@ -22,8 +24,8 @@ pub struct Arguments {
     pub disable_banner: bool,
 
     /// Configuration file path
-    #[clap(short, long, default_value_t=String::from("./quibble.toml"))]
-    pub config: String,
+    #[clap(short, long, default_value="./quibble.toml")]
+    pub config: PathBuf,
 
     #[clap(subcommand)]
     pub commands: ArgumentCommands,
@@ -36,12 +38,12 @@ pub enum ArgumentCommands {
     /// Scan compose file(s)
     Compose {
         /// Folder or compose file path
-        #[clap(short, long, default_value_t=String::from("./"))]
-        path: String,
+        #[clap(short, long, default_value="./")]
+        path: PathBuf,
 
         /// Output Location
         #[clap(short, long)]
-        output: Option<String>,
+        output: Option<PathBuf>,
 
         /// Output Format
         #[clap(long, default_value_t=String::from("cli"))]

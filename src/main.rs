@@ -1,4 +1,8 @@
-use std::{fs::canonicalize, path::Path, process};
+use std::{
+    fs::canonicalize,
+    path::{Path, PathBuf},
+    process,
+};
 
 use anyhow::Result;
 use clap::Parser;
@@ -21,7 +25,7 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
     // If a single alert
     let mut alert_present: bool = false;
 
-    let mut current = String::new();
+    let mut current = PathBuf::new();
     for result in results {
         if severity < result.severity {
             debug!("Skipping: {}", result);
@@ -30,7 +34,7 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
 
         if current != result.path.path && !result.path.path.is_empty() {
             println!("\n{:^32}\n", style(&result.path).bold().blue());
-            current = result.path.path.clone();
+            current = result.path.path;
         }
 
         let severity = match result.severity {
@@ -102,7 +106,7 @@ fn main() -> Result<()> {
 
             // Run the list of rules over the Compose File
             for cf in compose_files.iter() {
-                debug!("Compose File :: {}", cf.path);
+                debug!("Compose File :: {}", cf.path.display());
                 results.extend(rules.run(cf));
             }
 
