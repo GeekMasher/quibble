@@ -25,16 +25,16 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
     // If a single alert
     let mut alert_present: bool = false;
 
-    let mut current = PathBuf::new();
+    let mut previous = PathBuf::new();
     for result in results {
         if severity < result.severity {
             debug!("Skipping: {}", result);
             continue;
         }
 
-        if current != result.path.path && !result.path.path.is_empty() {
+        if previous != result.path.path {
             println!("\n{:^32}\n", style(&result.path).bold().blue());
-            current = result.path.path;
+            previous = result.path.path;
         }
 
         let severity = match result.severity {
