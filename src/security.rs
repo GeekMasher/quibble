@@ -193,14 +193,14 @@ impl Rules {
 
         if !rules.config.disable_rules {
             rules
-                .register(&rules::docker_version)
-                .register(&rules::docker_socket)
-                .register(&rules::docker_registry)
-                .register(&rules::container_images)
-                .register(&rules::kernel_parameters)
-                .register(&rules::security_opts)
-                .register(&rules::privileged)
-                .register(&rules::environment_variables);
+                .register(rules::docker_version)
+                .register(rules::docker_socket)
+                .register(rules::docker_registry)
+                .register(rules::container_images)
+                .register(rules::kernel_parameters)
+                .register(rules::security_opts)
+                .register(rules::privileged)
+                .register(rules::environment_variables);
         }
 
         rules
