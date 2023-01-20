@@ -97,7 +97,7 @@ fn main() -> Result<()> {
             };
             debug!("Severity set :: {severity}");
 
-            let mut rules = Rules::new(&config);
+            let mut rules = Rules::new(config.clone());
             debug!("Rule count: {}", rules.len());
 
             // Run the list of rules over the Compose File

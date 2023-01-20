@@ -179,19 +179,19 @@ impl Display for AlertLocation {
 
 pub type Rule = dyn Fn(&Config, &ComposeFile, &mut Vec<Alert>) -> Result<()>;
 
-pub struct Rules<'rules> {
-    config: &'rules Config,
-    rules: Vec<Rc<RefCell<&'rules Rule>>>,
+pub struct Rules {
+    config: Config,
+    rules: Vec<Box<Rule>>,
 }
 
-impl<'rules> Rules<'rules> {
-    pub fn new(config: &'rules Config) -> Self {
+impl Rules {
+    pub fn new(config: Config) -> Self {
         let mut rules = Rules {
             config,
             rules: Vec::new(),
         };
 
-        if !config.disable_rules {
+        if !rules.config.disable_rules {
             rules
                 .register(&rules::docker_version)
                 .register(&rules::docker_socket)
@@ -209,8 +209,7 @@ impl<'rules> Rules<'rules> {
     pub fn run(&mut self, compose_file: &ComposeFile) -> Vec<Alert> {
         let mut alerts: Vec<Alert> = Vec::new();
         for rule in self.rules.iter() {
-            let mut closure = rule.borrow_mut();
-            if let Err(err) = (*closure)(self.config, compose_file, &mut alerts) {
+            if let Err(err) = rule(&self.config, compose_file, &mut alerts) {
                 error!("Error during rule execution: {err:?}");
             }
         }
@@ -219,9 +218,13 @@ impl<'rules> Rules<'rules> {
         alerts
     }
 
-    pub fn register(&mut self, rule: &'rules Rule) -> &mut Self {
-        let cell = Rc::new(RefCell::new(rule));
-        self.rules.push(cell);
+    pub fn register<R>(&mut self, rule: R) -> &mut Self
+    where
+        R: Fn(&Config, &ComposeFile, &mut Vec<Alert>) -> Result<()> + 'static,
+    {
+        // let cell = Rc::new(RefCell::new(rule));
+        // self.rules.push(cell);
+        self.rules.push(Box::new(rule));
         self
     }
 
