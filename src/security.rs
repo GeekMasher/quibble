@@ -222,8 +222,6 @@ impl Rules {
     where
         R: Fn(&Config, &ComposeFile, &mut Vec<Alert>) -> Result<()> + 'static,
     {
-        // let cell = Rc::new(RefCell::new(rule));
-        // self.rules.push(cell);
         self.rules.push(Box::new(rule));
         self
     }
