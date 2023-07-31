@@ -1,5 +1,5 @@
 #![allow(unused)]
-use std::{cell::RefCell, fmt::Display, ops::Index, rc::Rc};
+use std::{cell::RefCell, fmt::Display, ops::Index, path::PathBuf, rc::Rc};
 
 use anyhow::Result;
 use log::{error, warn};
@@ -150,7 +150,7 @@ impl Display for Alert {
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 /// Alert Location with a path and line number
 pub struct AlertLocation {
-    pub path: String,
+    pub path: PathBuf,
     pub line: Option<i32>,
 }
 
@@ -158,10 +158,10 @@ impl Display for AlertLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.line {
             Some(l) => {
-                write!(f, "{}#{}", self.path, l)
+                write!(f, "{}#{}", self.path.display(), l)
             }
             None => {
-                write!(f, "{}", self.path)
+                write!(f, "{}", self.path.display())
             }
         }
     }
