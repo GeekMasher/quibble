@@ -1,4 +1,4 @@
-name: 'quibble'
+name: 'quibble-action'
 description: 'A container security tool written in Rust focusing on making security easy for compose based configurations'
 
 inputs:
