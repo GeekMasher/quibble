@@ -74,6 +74,15 @@ fn default_severity() -> String {
 
 fn default_registries() -> Vec<String> {
     // Default registries
-    let registries: Vec<String> = vec!["docker.io".to_string(), "ghdr.io".to_string()];
+    let registries: Vec<String> = vec![
+        // Docker
+        "docker.io".to_string(),
+        // GitHub
+        "ghcr.io".to_string(),
+        // Microsoft
+        "mcr.microsoft.com".to_string(),
+        // Google
+        "gcr.io".to_string(),
+    ];
     registries
 }

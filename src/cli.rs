@@ -24,7 +24,7 @@ pub struct Arguments {
     pub disable_banner: bool,
 
     /// Configuration file path
-    #[clap(short, long, default_value="./quibble.toml")]
+    #[clap(short, long, default_value = "./quibble.toml")]
     pub config: PathBuf,
 
     #[clap(subcommand)]
@@ -33,12 +33,12 @@ pub struct Arguments {
 
 #[derive(Subcommand, Debug)]
 pub enum ArgumentCommands {
-    /// Check if setup and tools are all avalible
+    /// Check if setup and tools are all available
     Check,
     /// Scan compose file(s)
     Compose {
         /// Folder or compose file path
-        #[clap(short, long, default_value="./")]
+        #[clap(short, long, default_value = "./")]
         path: PathBuf,
 
         /// Output Location
@@ -48,6 +48,10 @@ pub enum ArgumentCommands {
         /// Output Format
         #[clap(long, default_value_t=String::from("cli"))]
         format: String,
+
+        /// Base Source
+        #[clap(short, long, default_value = "./")]
+        base: PathBuf,
 
         /// Filter for which alerts are shown
         #[clap(short, long)]

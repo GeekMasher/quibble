@@ -7,17 +7,19 @@ use std::{
 use anyhow::Result;
 use clap::Parser;
 use console::style;
-use log::{debug, error};
+use log::{debug, error, info};
 
 mod cli;
 mod compose;
 mod config;
 mod containers;
+mod formatters;
 mod security;
 
 use crate::{
     cli::{ArgumentCommands, Arguments, AUTHOR, BANNER, VERSION_NUMBER},
     config::Config,
+    formatters::sarif::SarifFile,
     security::{Alert, Rules, Severity},
 };
 
@@ -26,15 +28,16 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
     let mut alert_present: bool = false;
 
     let mut previous = PathBuf::new();
+
     for result in results {
         if severity < result.severity {
             debug!("Skipping: {}", result);
             continue;
         }
 
-        if previous != result.path.path {
+        if previous != result.path.path.clone() {
             println!("\n{:^32}\n", style(&result.path).bold().blue());
-            previous = result.path.path;
+            previous = result.path.path.clone();
         }
 
         let severity = match result.severity {
@@ -47,6 +50,7 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
             _ => style(&result.severity).green(),
         };
         println!("[{}] {}", severity, &result.details);
+        println!("{:^16} > {}", "", result.path);
 
         alert_present = true;
     }
@@ -84,9 +88,10 @@ fn main() -> Result<()> {
     match &arguments.commands {
         ArgumentCommands::Compose {
             path,
-            output: _,
+            output,
             format,
             filter,
+            base,
             disable_fail,
         } => {
             let full_path = canonicalize(path)?;
@@ -114,6 +119,26 @@ fn main() -> Result<()> {
                 "cli" => {
                     debug!("Running in CLI mode...");
                     output_cli(&config, severity, results)?
+                }
+                "sarif" => {
+                    info!("Running in SARIF mode...");
+                    match output {
+                        Some(o) => {
+                            let sarif = SarifFile::new()
+                                .set_tool(String::from("Quibble"), VERSION_NUMBER.to_string())
+                                .base(base)
+                                .add_results(results)
+                                .build()?;
+
+                            sarif.write(o)?;
+                            info!("SARIF file written to: {}", o.display());
+                            true
+                        }
+                        None => {
+                            error!("No output file specified...");
+                            false
+                        }
+                    }
                 }
                 _ => {
                     error!("Unknown format output: `{format}`");

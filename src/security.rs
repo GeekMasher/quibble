@@ -88,23 +88,28 @@ impl Display for Severity {
             Self::Hardening => "Hrdn",
             Self::All => "All",
         };
-        write!(f, "{sev:^12}")
+        write!(f, "{sev}")
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 /// Rule ID using CWE or OWASP Docker Top 10
 pub enum RuleID {
+    Quibble(String),
     Cwe(String),
     Owasp(String),
-    #[default]
-    None,
+}
+
+impl Default for RuleID {
+    fn default() -> Self {
+        RuleID::Quibble("N/A".to_string())
+    }
 }
 
 impl Display for RuleID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let id = match self {
-            RuleID::None => "N/A".to_string(),
+            RuleID::Quibble(q) => q.to_string(),
             RuleID::Owasp(i) => {
                 format!("OWASP-{i}")
             }
@@ -135,6 +140,17 @@ impl Alert {
             ..Default::default()
         }
     }
+
+    pub fn cvss(&self) -> String {
+        match self.severity {
+            Severity::Critical => "10.0".to_string(),
+            Severity::High => "7.0".to_string(),
+            Severity::Medium => "5.0".to_string(),
+            Severity::Low => "3.0".to_string(),
+            Severity::Hardening => "2.0".to_string(),
+            Severity::Information | Severity::All | Severity::Quality => "".to_string(),
+        }
+    }
 }
 
 impl Display for Alert {
@@ -147,7 +163,7 @@ impl Display for Alert {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 /// Alert Location with a path and line number
 pub struct AlertLocation {
     pub path: PathBuf,
@@ -158,7 +174,7 @@ impl Display for AlertLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.line {
             Some(l) => {
-                write!(f, "{}#{}", self.path.display(), l)
+                write!(f, "{}#{}", self.path.display(), l + 1)
             }
             None => {
                 write!(f, "{}", self.path.display())
