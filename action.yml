@@ -1,0 +1,36 @@
+name: 'quibble'
+description: 'A container security tool written in Rust focusing on making security easy for compose based configurations'
+
+inputs:
+  compose-file:
+    description: "Compose File Path"
+
+  repository:
+    description: "Repository Owner and Repository Name"
+    default: ${{ github.repository }}
+
+  filter:
+    description: "Filter"
+    default: "all"
+
+  output:
+    description: "Output SARIF file path"
+    default: "./quibble.sarif"
+
+  token:
+    description: GitHub Personal Access Token
+    default: ${{ github.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: dtolnay/rust-toolchain@nightly
+
+    - shell: bash
+      run: |
+        cargo install quibble
+        quibble compose \
+          -f "${{ inputs.filter }}" \
+          -p ./ \
+          --format sarif --disable-fail -o "${{ inputs.output }}"
+
