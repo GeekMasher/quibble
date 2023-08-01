@@ -2,7 +2,7 @@
 <h1>Quibble</h1>
 
 [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GeekMasher/quibble)
-[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/geekmasher/quibble/python-package.yml?style=for-the-badge)](https://github.com/GeekMasher/quibble/actions/workflows/python-package.yml?query=branch%3Amain)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/geekmasher/quibble/rust.yml?style=for-the-badge)](https://github.com/GeekMasher/quibble/actions/workflows/rust.yml?query=branch%3Amain)
 [![GitHub Issues](https://img.shields.io/github/issues/geekmasher/quibble?style=for-the-badge)](https://github.com/GeekMasher/quibble/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/geekmasher/quibble?style=for-the-badge)](https://github.com/GeekMasher/quibble)
 [![Crates.io](https://img.shields.io/crates/d/quibble?style=for-the-badge)](https://crates.io/crates/quibble/)
