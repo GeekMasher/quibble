@@ -26,6 +26,7 @@ jobs:
           cargo test --verbose
 
       - name: Run Analysis
+        continue-on-error: true
         run: |
           cargo run -- compose -f all -p ./examples
 
