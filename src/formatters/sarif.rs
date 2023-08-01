@@ -91,6 +91,7 @@ impl SarifBuilder {
                 full_description: Message {
                     text: alert.details.to_string(),
                 },
+                help_uri: String::from("https://github.com/GeekMasher/quibble"),
                 properties: Properties {
                     id: alert.id.to_string(),
                     severity: alert.severity.to_string().to_lowercase(),
@@ -98,7 +99,6 @@ impl SarifBuilder {
                     precision: String::from("high"),
                     ..Default::default()
                 },
-                ..Default::default()
             });
 
             run.results.push(RunResult {
@@ -176,12 +176,12 @@ impl Default for ArtifactLocation {
 pub struct Region {
     #[serde(rename = "startLine")]
     pub start_line: i32,
-    #[serde(rename = "startColumn")]
-    pub start_column: i32,
-    #[serde(rename = "endLine")]
-    pub end_line: i32,
-    #[serde(rename = "endColumn")]
-    pub end_column: i32,
+    #[serde(rename = "startColumn", skip_serializing_if = "Option::is_none")]
+    pub start_column: Option<i32>,
+    #[serde(rename = "endLine", skip_serializing_if = "Option::is_none")]
+    pub end_line: Option<i32>,
+    #[serde(rename = "endColumn", skip_serializing_if = "Option::is_none")]
+    pub end_column: Option<i32>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
