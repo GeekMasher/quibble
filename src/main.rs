@@ -48,9 +48,9 @@ fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Resu
                 style(&result.severity).yellow()
             }
             _ => style(&result.severity).green(),
-        };
-        println!("[{}] {}", severity, &result.details);
-        println!("{:^16} > {}", "", result.path);
+        }
+        .to_string();
+        println!("[{:^22}] {}", severity, &result.details);
 
         alert_present = true;
     }

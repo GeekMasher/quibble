@@ -79,16 +79,16 @@ impl From<String> for Severity {
 impl Display for Severity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sev = match self {
-            Self::Critical => "Crit",
-            Self::High => "High",
-            Self::Medium => "Med",
-            Self::Low => "Low",
-            Self::Information => "Info",
-            Self::Quality => "Qual",
-            Self::Hardening => "Hrdn",
-            Self::All => "All",
+            Self::Critical => "Critical".to_string(),
+            Self::High => "High".to_string(),
+            Self::Medium => "Medium".to_string(),
+            Self::Low => "Low".to_string(),
+            Self::Information => "Information".to_string(),
+            Self::Quality => "Quality".to_string(),
+            Self::Hardening => "Hardening".to_string(),
+            Self::All => "All".to_string(),
         };
-        write!(f, "{sev}")
+        write!(f, "{}", sev)
     }
 }
 
