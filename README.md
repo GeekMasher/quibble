@@ -28,6 +28,13 @@ cd quibble
 cargo install --path .
 ```
 
+### Actions
+
+```yml
+- name: Quibble Scan
+  uses: GeekMasher/quibble@0.3.1
+```
+
 ## Usage
 
 Quibble runs in many modes (more to come soon)
