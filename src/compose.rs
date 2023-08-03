@@ -8,10 +8,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub mod rules;
 pub mod spec;
 
-pub use rules::*;
+pub use crate::rules::*;
 pub use spec::*;
 use walkdir::WalkDir;
 

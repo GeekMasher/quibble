@@ -4,11 +4,7 @@ use std::{cell::RefCell, fmt::Display, ops::Index, path::PathBuf, rc::Rc};
 use anyhow::Result;
 use log::{error, warn};
 
-use crate::{
-    compose::{rules, ComposeFile},
-    config::Config,
-    security,
-};
+use crate::{compose::ComposeFile, config::Config, rules::*, security};
 
 const SEVERITIES: &[&str; 10] = &[
     "critical",
@@ -180,59 +176,6 @@ impl Display for AlertLocation {
                 write!(f, "{}", self.path.display())
             }
         }
-    }
-}
-
-pub type Rule = dyn Fn(&Config, &ComposeFile, &mut Vec<Alert>) -> Result<()>;
-
-pub struct Rules<'rules> {
-    config: &'rules Config,
-    rules: Vec<Rc<RefCell<&'rules Rule>>>,
-}
-
-impl<'rules> Rules<'rules> {
-    pub fn new(config: &'rules Config) -> Self {
-        let mut rules = Rules {
-            config,
-            rules: Vec::new(),
-        };
-
-        if !config.disable_rules {
-            rules
-                .register(&rules::docker_version)
-                .register(&rules::docker_socket)
-                .register(&rules::docker_registry)
-                .register(&rules::container_images)
-                .register(&rules::kernel_parameters)
-                .register(&rules::security_opts)
-                .register(&rules::privileged)
-                .register(&rules::environment_variables);
-        }
-
-        rules
-    }
-
-    pub fn run(&mut self, compose_file: &ComposeFile) -> Vec<Alert> {
-        let mut alerts: Vec<Alert> = Vec::new();
-        for rule in self.rules.iter() {
-            let mut closure = rule.borrow_mut();
-            if let Err(err) = (*closure)(self.config, compose_file, &mut alerts) {
-                error!("Error during rule execution: {err:?}");
-            }
-        }
-        // Sort by severity
-        alerts.sort_by(|a, b| a.severity.cmp(&b.severity));
-        alerts
-    }
-
-    pub fn register(&mut self, rule: &'rules Rule) -> &mut Self {
-        let cell = Rc::new(RefCell::new(rule));
-        self.rules.push(cell);
-        self
-    }
-
-    pub fn len(&self) -> usize {
-        self.rules.len()
     }
 }
 

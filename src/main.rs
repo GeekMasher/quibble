@@ -14,13 +14,15 @@ mod compose;
 mod config;
 mod containers;
 mod formatters;
+mod rules;
 mod security;
 
 use crate::{
     cli::{ArgumentCommands, Arguments, AUTHOR, BANNER, VERSION_NUMBER},
     config::Config,
     formatters::sarif::SarifFile,
-    security::{Alert, Rules, Severity},
+    rules::Rules,
+    security::{Alert, Severity},
 };
 
 fn output_cli(_config: &Config, severity: Severity, results: Vec<Alert>) -> Result<bool> {
@@ -106,7 +108,7 @@ fn main() -> Result<()> {
             };
             debug!("Severity set :: {severity}");
 
-            let mut rules = Rules::new(&config);
+            let mut rules = Rules::new(config.clone());
             debug!("Rule count: {}", rules.len());
 
             // Run the list of rules over the Compose File
