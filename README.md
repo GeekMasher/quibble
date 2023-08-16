@@ -32,7 +32,7 @@ cargo install --path .
 
 ```yml
 - name: Quibble Scan
-  uses: GeekMasher/quibble@0.3.2
+  uses: GeekMasher/quibble@0.3.3
 ```
 
 ## Usage
