@@ -82,24 +82,32 @@ impl SarifBuilder {
                 .strip_prefix(&self.base)
                 .unwrap_or(&alert.path.path);
 
-            run.tool.driver.rules.push(Rule {
-                id: alert.id.to_string(),
-                name: alert.details.to_string(),
-                short_description: Message {
-                    text: alert.details.to_string(),
-                },
-                full_description: Message {
-                    text: alert.details.to_string(),
-                },
-                help_uri: String::from("https://github.com/GeekMasher/quibble"),
-                properties: Properties {
+            if !run
+                .tool
+                .driver
+                .rules
+                .iter()
+                .any(|r| r.id == alert.id.to_string())
+            {
+                run.tool.driver.rules.push(Rule {
                     id: alert.id.to_string(),
-                    severity: alert.severity.to_string().to_lowercase(),
-                    security_severity: alert.cvss(),
-                    precision: String::from("high"),
-                    ..Default::default()
-                },
-            });
+                    name: alert.details.to_string(),
+                    short_description: Message {
+                        text: alert.details.to_string(),
+                    },
+                    full_description: Message {
+                        text: alert.details.to_string(),
+                    },
+                    help_uri: String::from("https://github.com/GeekMasher/quibble"),
+                    properties: Properties {
+                        id: alert.id.to_string(),
+                        severity: alert.severity.to_string().to_lowercase(),
+                        security_severity: alert.cvss(),
+                        precision: String::from("high"),
+                        ..Default::default()
+                    },
+                });
+            }
 
             run.results.push(RunResult {
                 rule_id: format!("{}", alert.id),
