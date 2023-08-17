@@ -30,4 +30,3 @@ jobs:
         run: |
           cargo run -- compose -f all -p ./examples
 
-
