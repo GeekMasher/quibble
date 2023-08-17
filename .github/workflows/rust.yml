@@ -30,18 +30,3 @@ jobs:
         run: |
           cargo run -- compose -f all -p ./examples
 
-  container:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build the Docker image
-        run: |
-          docker build . --file Dockerfile --tag quibble:dev
-
-      - name: Run container
-        run: |
-          docker run --rm --name quibble quibble:dev
-
-
